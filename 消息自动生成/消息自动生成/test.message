@@ -1,0 +1,5 @@
+uint8_t head1
+uint8_t head2
+int32_t message
+int body[10]
+uint8_t rear
