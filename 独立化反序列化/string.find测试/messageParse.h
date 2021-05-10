@@ -45,6 +45,11 @@ private:
 
 	bool writeHead();
 	bool writeConstructors( const std::pair<std::string, std::vector<ElementInfo>> &it );
+	bool writeCopyConstructors(const std::pair<std::string, std::vector<ElementInfo>> &it);
+	bool writeELements( const std::pair<std::string, std::vector<ElementInfo>> &it );
+
+	bool writeSerialize( const std::pair<std::string, std::vector<ElementInfo>> &it );
+	bool writeDeSerialize( const std::pair<std::string, std::vector<ElementInfo>> &it );
 
 private:
 	std::string readPath;
@@ -280,6 +285,32 @@ bool Serialize::read()
 	return true;
 }
 
+bool Serialize::writeELements(const std::pair<std::string, std::vector<ElementInfo>> &it)
+{
+	if (it.second.empty()) return false;
+
+	for (auto item : it.second) {
+		switch (item.type) {
+			case 1:outfile << "\tchar " << item.name <<std::endl; break;
+			case 2:outfile << "\tshort " << item.name<<std::endl; break;
+			case 3:outfile << "\tint " << item.name << std::endl; break;
+			case 4:outfile << "\tlong " << item.name << std::endl; break;
+			case 5:outfile << "\tfloat " << item.name << std::endl; break;
+			case 6:outfile << "\tdouble " << item.name <<std::endl; break;
+			case 7: outfile << "\tchar " << item.name << "["<<item.length<<"]"<<std::endl; break;
+			case 8: outfile << "\tshort " << item.name << "[" << item.length << "]" << std::endl; break;
+			case 9: outfile << "\tint " << item.name << "[" << item.length << "]" << std::endl; break;
+			case 10: outfile << "\tlong " << item.name << "[" << item.length << "]" << std::endl; break;
+			case 11: outfile << "\tfloat " << item.name << "[" << item.length << "]" << std::endl; break;
+			case 12: outfile << "\tdouble " << item.name << "[" << item.length << "]" << std::endl; break;
+			default: break;
+		}
+	}
+	outfile << std::endl;
+
+	return true;
+}
+
 bool Serialize::writeHead()
 {
 	std::string head = writePath.substr( 0, head.find( ".h" ) );
@@ -401,6 +432,209 @@ bool Serialize::writeConstructors(const std::pair<std::string, std::vector<Eleme
 	return true;
 }
 
+bool Serialize::writeCopyConstructors(const std::pair<std::string, std::vector<ElementInfo>> &it)
+{
+	std::cout << "Data Type: " << it.first << std::endl;
+
+	std::vector<ElementInfo> arrayVec, eleVec;
+	if (it.second.empty()) return false;
+
+	for (auto item : it.second) {
+		if (item.length == -1) eleVec.push_back(item);
+		else arrayVec.push_back(item);
+	}
+
+	// ----------- Copy Constructor ------------//
+	outfile << "\t" << it.first << "( const " << it.first << " &other )";
+	if (!eleVec.empty() || !arrayVec.empty()) outfile << " : ";
+
+	if (!eleVec.empty()) {
+		for (auto item = eleVec.begin(); item != eleVec.end(); item++) {
+			outfile << item->name << "( other." << item->name << " ), ";
+			if (item == eleVec.end()) {
+				outfile << item->name << "( other." << item->name << " )" << std::endl;
+			}
+		}
+	}
+
+	outfile << "\t{" << std::endl;
+
+	if (!arrayVec.empty()) {
+		for (auto item = arrayVec.begin(); item != arrayVec.end(); item++) {
+			switch (item->type) {
+				case 7: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 1 );" << std::endl; break;
+				case 8: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 2 );" << std::endl; break;
+				case 9: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 4 );" << std::endl; break;
+				case 10: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 8 );" << std::endl; break;
+				case 11: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 4 );" << std::endl; break;
+				case 12: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 8 );" << std::endl; break;
+				default: break;
+			}
+			
+		}
+	}
+
+	outfile << "\t}" << std::endl;
+
+	// ----------- Copy Assignment ------------//
+	outfile << "\t" << it.first << "& operator=( const " << it.first << " &rhs )" << std::endl;
+	outfile << "\t{" << std::endl;
+	if (!eleVec.empty()) {
+		for (auto item : eleVec) {
+			outfile << item.name << " = rhs." << item.name << std::endl;
+		}
+	}
+	if (!arrayVec.empty()) {
+		for (auto item = arrayVec.begin(); item != arrayVec.end(); item++) {
+			switch (item->type) {
+			case 7: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 1 );" << std::endl; break;
+			case 8: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 2 );" << std::endl; break;
+			case 9: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 4 );" << std::endl; break;
+			case 10: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 8 );" << std::endl; break;
+			case 11: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 4 );" << std::endl; break;
+			case 12: outfile << "\t\tmemcpy( &" << item->name << ", other." << item->name << ", " << item->length << " * 8 );" << std::endl; break;
+			default: break;
+			}
+
+		}
+	}
+
+	outfile << "\t}" << std::endl <<std::endl;
+
+	return true;
+}
+
+bool Serialize::writeSerialize(const std::pair<std::string, std::vector<ElementInfo>> &it)
+{
+	if (!it.second.empty()) return false;
+
+	outfile << "\tint serialize( char *buff )" << std::endl;
+	outfile << "\t{" << std::endl;
+	outfile << "\t\tint pose = 0;" << std::endl;
+
+	for (auto item : it.second) {
+		if (item.type == 1) { //int8
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 1 );" << std::endl;
+			outfile << "\t\tpose += 1;" << std::endl;
+		}
+		else if (item.type == 2) { // int16
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 2 );" << std::endl;
+			outfile << "\t\tpose += 2;" << std::endl;
+		}
+		else if (item.type == 3) { // int32
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 4 );" << std::endl;
+			outfile << "\t\tpose += 4;" << std::endl;
+		}
+		else if (item.type == 4) { //int64
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 8 );" << std::endl;
+			outfile << "\t\tpose += 8;" << std::endl;
+		}
+		else if (item.type == 5) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 4 );" << std::endl;
+			outfile << "\t\tpose += 4;" << std::endl;
+		}
+		else if (item.type == 6) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", 8 );" << std::endl;
+			outfile << "\t\tpose += 8;" << std::endl;
+		}
+		else if (item.type == 7) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " );" << std::endl;
+			outfile << "\t\tpose += " << item.length << std::endl;
+		}
+		else if (item.type == 8) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " * 2 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 2;" << std::endl;
+		}
+		else if (item.type == 9) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " * 4 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 4;" << std::endl;
+		}
+		else if (item.type == 10) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " * 8 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 8;" << std::endl;
+		}
+		else if (item.type == 11) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " * 4 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 4;" << std::endl;
+		}
+		else if (item.type == 12) {
+			outfile << "\t\tmemcpy( &buff[pose], &" << item.name << ", " << item.length << " * 8 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 8;" << std::endl;
+		}
+	}
+
+	outfile << "\t\treturn pose;" << std::endl;
+	outfile << "\t}" << std::endl;
+
+	return true;
+}
+
+bool Serialize::writeDeSerialize(const std::pair<std::string, std::vector<ElementInfo>> &it)
+{
+	if (!it.second.empty()) return false;
+
+	//outfile << "\t" << it.first << " deSerialize( char *buff )" << std::endl;
+	outfile << "\t" << "void deSerialize( char *buff )" << std::endl;
+	outfile << "\t{" << std::endl;
+	outfile << "\t\tint pose = 0;" << std::endl;
+	//outfile << "\t\t" << it.first << " data;" << std::endl;
+
+	for (auto item : it.second) {
+		if (item.type == 1) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 1 );" << std::endl;
+			outfile << "\t\tpose += 1;" << std::endl;
+		}
+		else if (item.type == 2) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 2 );" << std::endl;
+			outfile << "\t\tpose += 2;" << std::endl;
+		}
+		else if (item.type == 3) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 4 );" << std::endl;
+			outfile << "\t\tpose += 4;" << std::endl;
+		}
+		else if (item.type == 4) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 8 );" << std::endl;
+			outfile << "\t\tpose += 8;" << std::endl;
+		}
+		else if (item.type == 5) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 4 );" << std::endl;
+			outfile << "\t\tpose += 4;" << std::endl;
+		}
+		else if (item.type == 6) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose], 8 );" << std::endl;
+			outfile << "\t\tpose += 8;" << std::endl;
+		}
+		else if (item.type == 7) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " );" << std::endl;
+			outfile << "\t\tpose += "<< item.length << std::endl;
+		}
+		else if (item.type == 8) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " * 2 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 2;" << std::endl;
+		}
+		else if (item.type == 9) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " * 4 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 4;" << std::endl;
+		}
+		else if (item.type == 10) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " * 8 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 8;" << std::endl;
+		}
+		else if (item.type == 11) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " * 4 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 4;" << std::endl;
+		}
+		else if (item.type == 12) {
+			outfile << "\t\tmemcpy( &" << item.name << ", buff[pose]," << item.length << " * 8 );" << std::endl;
+			outfile << "\t\tpose += " << item.length << " * 8;" << std::endl;
+		}
+	}
+
+	outfile << "\t}" << std::endl;
+
+	return true;
+}
+
 bool Serialize::write()
 {
 	outfile.open( writePath, std::ios::out | std::ios::trunc );
@@ -415,9 +649,18 @@ bool Serialize::write()
 		// write structure
 		outfile << "struct " << it.first << std::endl;
 		outfile << "{" << std::endl;
+		writeELements( it );
 		writeConstructors( it );
+		writeCopyConstructors( it );
+		writeSerialize( it );
+		writeDeSerialize( it );
 
+		outfile << "};" << std::endl;
+		outfile << "typedef struct " << it.first << " " << it.first << std::endl;
 	}
+
+	outfile << std::endl;
+	outfile << "#endif" << std::endl;
 
 	return true;
 }
