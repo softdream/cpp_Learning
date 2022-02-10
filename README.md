@@ -106,10 +106,16 @@ Derive2 Class Test Function ...
 静态的虚函数表，静态的含义是指这个虚函数表是该类所有对象所共享的，即不管实例化了多少该类的对象，该虚函数表都只有一个。</br>
 &emsp;在执行：
 ```cpp
-Base *p = new Derive1();
-p->testFunc();
+  Base *p = new Derive1();
+  p->testFunc();
 ```
 的时候，p指针指向如下图所示位置，接着通过子类Derive1的vPtr即可访问到Derive1的testFunc()函数。</br>
-![1644483408(1)](https://user-images.githubusercontent.com/22597323/153372383-7f601527-21f9-460e-bc67-7d624ed3593e.png) </br>
+![1644483558(1)](https://user-images.githubusercontent.com/22597323/153372789-8a2db18a-97fe-4aea-b169-92c5db915128.png) </br>
+执行：
+```cpp
+  p = new Derive2();
+  p->testFunc();
+```
+的时候同理。</br>
 
 
