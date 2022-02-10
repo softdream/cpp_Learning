@@ -24,6 +24,9 @@ public:
   {
     std::cout<<"Base Class Test Function ..."<<std::endl;
   }
+
+private:
+  int a;
 };
 
 class Derive1 : public Base
@@ -43,6 +46,9 @@ public:
   {
     std::cout<<"Derive1 Class Test Function ..."<<std::endl;
   }
+
+private:
+  int b; 
 };
 
 class Derive2 : public Base
@@ -62,12 +68,15 @@ public:
   {
     std::cout<<"Derive2 Class Test Function ..."<<std::endl;
   }
+
+private:
+  int c;
 };
 ```
 &emsp;上述代码是一个简单的c++多态例程，最直观的感受是在父类的派生类中重写了父类中的带virtual 关键字的函数。</br>
 这样做的目的是为了实现以下这种应用场景：</br>
-有时候在派生类中需要重写父类提供的某种方法，这种方法名称相同，实现了相同的作用，但是实现机制完全不一样，需要在程序运行过程中根据实际情况确定</br>
-到底需要用哪个方法。</br>
+&emsp;有时候在派生类中需要重写父类提供的某种方法，这种方法名称相同，实现了相同的作用，但是实现机制完全不一样，</br>
+需要在程序运行过程中根据实际情况确定到底需要用哪个方法。</br>
 &emsp;在实际调用时，如下：</br>
 ```cpp
 int main()
@@ -86,4 +95,12 @@ int main()
 "Derive1 Class Test Function ...
 Derive2 Class Test Function ...
 ```
+&emsp;从main函数中可以看出，实现多态的条件有以下两个；</br>
+&emsp;(1).必须通过基类的指针或者引用调用虚函数；</br>
+&emsp;(2).被调用的函数是虚函数，且必须完成对基类虚函数的重写；</br>
+&emsp;c++多态的原理就是--虚函数表；</br>
+&emsp;当一个类中出现virtual关键字（不管是哪个函数前面有都一样），在实例化的时候编译器会为这个类对象自动分配一个虚指针(vPtr).</br>
+该指针指向一个静态的虚函数表(vTable)。以上面的程序为例：Base类对象的内存模型如下：
+![1644481704(1)](https://user-images.githubusercontent.com/22597323/153367608-377ad629-5bfc-4eb7-bae7-ca40a1e007a3.png)
+
 
