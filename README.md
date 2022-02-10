@@ -279,27 +279,27 @@ public:
 ```
 &emsp;用户在调用的时候车辆运行的接口时候，就可以根据实际情况来选择具体是哪种运行方式了。比如：
 ```cpp
-void bicycleRun( const Vechicle &v )
+void bicycleRun(Vehicle *v)
 {
-  v.run();
+	v->run();
 }
 
-void truckRun( const Vechicle &v )
+void truckRun(Vehicle *v)
 {
-  v.run();
+	v->run();
 }
 
 int main()
 {
-  Vechicle *vPtr;
-  
-  vPtr = new Bicycle();
-  bicycleRun(); // 结果是："The Bicycle Run Function "
-  
-  vPtr = new Truck();
-  truckRun(); // 结果是："The Truck Run Function "
-  
-  delete vPtr;
-  return 0;
+	Vehicle *vPtr;
+
+	vPtr = new Bicycle();
+	bicycleRun( vPtr ); // 结果是："The Bicycle Run Function "
+
+	vPtr = new Truck();
+	truckRun( vPtr ); // 结果是："The Truck Run Function "
+
+	delete vPtr;
+	return 0;
 }
 ```
