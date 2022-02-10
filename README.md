@@ -101,7 +101,15 @@ Derive2 Class Test Function ...
 &emsp;c++多态的原理就是--虚函数表；</br>
 &emsp;当一个类中出现virtual关键字（不管是哪个函数前面有都一样），在实例化的时候编译器会为这个类对象自动分配一个虚指针(vPtr).</br>
 该指针指向一个静态的虚函数表(vTable)。以上面的程序为例：Base类对象和继承类对象的内存模型如下：
-![1644481704(1)](https://user-images.githubusercontent.com/22597323/153367608-377ad629-5bfc-4eb7-bae7-ca40a1e007a3.png)
-&emsp;从图中可以清晰的看出，每个对象都有一个虚指针，虚指针一般位于类对象内存的开始，一般为4个字节（看机器字长），虚指针指向一</br>
+![1644481704(1)](https://user-images.githubusercontent.com/22597323/153367608-377ad629-5bfc-4eb7-bae7-ca40a1e007a3.png) </br>
+&emsp;从图中可以清晰的看出，每个对象都有一个虚指针，虚指针一般位于类对象内存的开始，一般为4个字节（看机器字长），虚指针指向一个</br>
 静态的虚函数表，静态的含义是指这个虚函数表是该类所有对象所共享的，即不管实例化了多少该类的对象，该虚函数表都只有一个。</br>
+&emsp;在执行：
+```cpp
+Base *p = new Derive1();
+p->testFunc();
+```
+的时候，p指针指向如下图所示位置，接着通过子类Derive1的vPtr即可访问到Derive1的testFunc()函数。</br>
+![1644483408(1)](https://user-images.githubusercontent.com/22597323/153372383-7f601527-21f9-460e-bc67-7d624ed3593e.png) </br>
+
 
