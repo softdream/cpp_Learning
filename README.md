@@ -201,9 +201,105 @@ str = Base Class Str Parameter
 但是在调用时使用的默认参数仍然是从这个全局变量值来取。</br>
 
 ### 1.1 多态--抽象类（接口的实现）
-所谓的接口，即将内部实现细节封装起来，外部用户用过预留的接口可以使用接口的功能而不需要知晓内部具体细节。
+&emsp;所谓的接口，即将内部实现细节封装起来，外部用户用过预留的接口可以使用接口的功能而不需要知晓内部具体细节。
 这样做的好处是，程序对外暴露接口，而接口的实现可以随时拓展或者修改，而接口的使用者却无需要关心接口是如何
 修改的。</br>
-c++中，接口通常是由抽象类来提供，该抽象类往往是作为一个基类而存在，在此抽象类中声明所需要的接口函数，
+&emsp;c++中，接口通常是由抽象类来提供，该抽象类往往是作为一个基类而存在，在此抽象类中声明所需要的接口函数，
 并且无需进行实现。对抽象类中的接口函数的实现一般延后到其派生类中进行。
-c++中抽象类一般使用纯虚函数来实现，所谓
+&emsp;c++中抽象类一般使用纯虚函数来实现，纯虚函数是在虚函数基础上加上"=0"定义的。只要一个类中存在至少一个纯虚函数，
+那么这个类就是抽象类，举例如下：
+```cpp
+class Interface
+{
+public:
+    virtual ~Interface()
+    {}
+    
+    virtual void interfaceFunction() = 0;
+};
+```
+&emsp;上述是一个抽象类的例子，可以看出纯虚函数即在虚函数的后面加上 "= 0"即可，只要一个类中某个函数被声明为了纯虚函数，那么
+这个类就是一个抽象类。注意纯虚函数不能被定义实现，甚至没有函数体，只是一个名字放在这里而已。既为抽象类，也表明了这个类是不能
+被实例化的，也就是说不能用抽象类来定义对象。</br>
+&emsp;单独一个抽象类没有任何用处，只用对该抽象类进行派生之后，才会体现出它的价值。从上文中我们可知C++的多态是使用虚函数机制
+来实现的，那么纯虚函数同样也能实现多态，因此需要在子类中对其进行重写，从而实现不同的同名接口功能。</br>
+&emsp;例如我们需要对车辆中的自行车和卡车进行建模，首先要定义一个车辆类，一个自行车类和一个卡车类，车辆类本身是一个抽象的类型，
+而自行车类和卡车类才是具体的类型。现在要为车辆定义一个跑的方法，显然凡是所有的车辆都能跑，但是自行车运行和卡车跑起来的原理却
+是不同的，那么我们可以这样写：</br>
+```cpp
+class Vehicle
+{
+public:
+  Vehicle()
+  {}
+  
+  virtual ~Vechicle()
+  {}
+  
+  // 在车辆类中定义车辆运行的方法，但是这个车辆是如何运行的要根据具体车辆而定，现在确定不下来，
+  // 因此只能先提供一个接口在这里，具体实现要针对不同的车辆去具体对待。
+  virtual void run() = 0;
+};
+
+// 自行车是车辆的一种
+class Bicycle : public Vechicle
+{
+public:
+  Bicycle()
+  {}
+  
+  virtual ~Bicycle()
+  {}
+  
+  // 自行车的运行方法就是确定的了
+  virtual void run()
+  {
+    // ....
+    std::cout<<"The Bicycle Run Function "<<std::endl;
+  }
+};
+
+// 卡车也是车辆的一种
+class Truck : public Vechicle
+{
+public:
+  Truck()
+  {}
+  
+  virtual ~Truck()
+  {}
+  
+  // 卡车的运行方法也是确定的
+  virtual void run()
+  {
+    // ....
+    std::cout<<"The Truck Run Function "<<std::endl;
+  }
+};
+```
+&emsp;用户在调用的时候车辆运行的接口时候，就可以根据实际情况来选择具体是哪种运行方式了。比如：
+```cpp
+void bicycleRun( const Vechicle &v )
+{
+  v.run();
+}
+
+void truckRun( const Vechicle &v )
+{
+  v.run();
+}
+
+int main()
+{
+  Vechicle *vPtr;
+  
+  vPtr = new Bicycle();
+  bicycleRun(); // 结果是："The Bicycle Run Function "
+  
+  vPtr = new Truck();
+  truckRun(); // 结果是："The Truck Run Function "
+  
+  delete vPtr;
+  return 0;
+}
+```
